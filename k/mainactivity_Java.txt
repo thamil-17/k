@@ -1,0 +1,84 @@
+package com.example.test_1;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText edtTask;
+    Button btnAdd;
+    ListView lvTasks;
+    TextView txtCounts;
+
+    ArrayList<Task> taskList;
+    TaskAdapter taskAdapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        edtTask = findViewById(R.id.edtTask);
+        btnAdd = findViewById(R.id.btnAdd);
+        lvTasks = findViewById(R.id.lvTasks);
+        txtCounts = findViewById(R.id.txtCounts);
+
+        taskList = new ArrayList<>();
+        taskAdapter = new TaskAdapter(this, taskList);
+        lvTasks.setAdapter(taskAdapter);
+
+        btnAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String title = edtTask.getText().toString().trim();
+
+                if (TextUtils.isEmpty(title)) {
+                    Toast.makeText(
+                            MainActivity.this,
+                            "Please enter a task",
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    return;
+                }
+
+                taskList.add(new Task(title, false));
+
+                taskAdapter.notifyDataSetChanged();
+                updateCounts();
+                edtTask.setText("");
+            }
+        });
+
+        updateCounts();
+    }
+
+    public void updateCounts() {
+        int pending = 0;
+        int completed = 0;
+
+        for (Task task : taskList) {
+            if (task.isCompleted()) {
+                completed++;
+            } else {
+                pending++;
+            }
+        }
+
+        txtCounts.setText(
+                "Pending: " + pending +
+                        " Completed: " + completed
+        );
+    }
+}

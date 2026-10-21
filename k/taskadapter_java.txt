@@ -1,0 +1,85 @@
+package com.example.test_1;
+
+import android.content.Context;
+import android.graphics.Paint;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+
+import java.util.List;
+
+public class TaskAdapter extends ArrayAdapter<Task> {
+
+    private final Context context;
+    private final List<Task> taskList;
+
+    public TaskAdapter(Context context, List<Task> taskList) {
+        super(context, 0, taskList);
+        this.context = context;
+        this.taskList = taskList;
+    }
+
+    @Override
+    public View getView(final int position, View convertView, ViewGroup parent) {
+
+        if (convertView == null) {
+            convertView = LayoutInflater.from(context)
+                    .inflate(R.layout.list_item, parent, false);
+        }
+
+        final Task task = taskList.get(position);
+
+        CheckBox chkTask = convertView.findViewById(R.id.chkTask);
+        Button btnDelete = convertView.findViewById(R.id.btnDelete);
+
+        chkTask.setOnCheckedChangeListener(null);
+        chkTask.setText(task.getTitle());
+        chkTask.setChecked(task.isCompleted());
+
+        applyStrikeThrough(chkTask, task.isCompleted());
+
+        chkTask.setOnCheckedChangeListener(
+                new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(
+                            CompoundButton buttonView,
+                            boolean isChecked) {
+
+                        task.setCompleted(isChecked);
+                        applyStrikeThrough(chkTask, isChecked);
+                        notifyDataSetChanged();
+                        ((MainActivity) context).updateCounts();
+                    }
+                });
+
+        btnDelete.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        taskList.remove(position);
+                        notifyDataSetChanged();
+                        ((MainActivity) context).updateCounts();
+                    }
+                });
+
+        return convertView;
+    }
+
+    private void applyStrikeThrough(CheckBox checkBox, boolean completed) {
+        if (completed) {
+            checkBox.setPaintFlags(
+                    checkBox.getPaintFlags()
+                            | Paint.STRIKE_THRU_TEXT_FLAG
+            );
+        } else {
+            checkBox.setPaintFlags(
+                    checkBox.getPaintFlags()
+                            & (~Paint.STRIKE_THRU_TEXT_FLAG)
+            );
+        }
+    }
+}
